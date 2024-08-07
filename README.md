@@ -48,13 +48,13 @@ cd 2024-internship-task-example
 
 ### Building the Application
 
+Simply use `cargo` to compile the backend; the script will automatically compile the proto files and the frontend web pages, then move the compiled static website files to the correct path.
+
 ```shell
 cargo build -p server --release
 ```
 
 ### Running the Application
-
-Simply use `cargo` to compile the backend; the script will automatically compile the proto files and the frontend web pages, then move the compiled static website files to the correct path.
 
 ```shell
 cargo run -p server --release
