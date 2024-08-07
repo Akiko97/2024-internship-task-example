@@ -1,0 +1,15 @@
+{
+  "host": "localhost",
+  "port": 8080,
+  "http": {
+    "base_path": "/",
+    "dist_path": "dist"
+  },
+  "websocket": {
+    "base_path": "/ws"
+  },
+  "proxy": {
+    "base_path": "/proxy",
+    "forward_to": "http://localhost:8080"
+  }
+}

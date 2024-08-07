@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package msg;
+
+enum StatusCode {
+  SUCCESS = 0;
+  FAILURE = 1;
+  INVALID_REQUEST = 2;
+  SERVER_ERROR = 3;
+}
+
+message Status {
+  StatusCode code = 1;
+  string message = 2;
+}
+
+message HeartbeatMsg {
+  string id = 1;
+  int64 timestamp = 2;
+}
+
+message RandomNumberRequest {
+  string id = 1;
+  int32 min = 2;
+  int32 max = 3;
+  int32 interval = 4;
+}
+
+message StopRandomNumberRequest {
+  string id = 1;
+}
+
+message IncrementalSequenceRequest {
+  string id = 1;
+  int32 start = 2;
+  int32 end = 3;
+  int32 interval = 4;
+}
+
+message StopIncrementalSequenceRequest {
+  string id = 1;
+}
+
+message EchoRequest {
+  string message = 1;
+}
+
+message RandomNumberResponse {
+  string id = 1;
+  Status status = 2;
+  int32 number = 3;
+}
+
+message StopRandomNumberResponse {
+  string id = 1;
+  Status status = 2;
+}
+
+message IncrementalSequenceResponse {
+  string id = 1;
+  Status status = 2;
+  int32 number = 3;
+}
+
+message StopIncrementalSequenceResponse {
+  string id = 1;
+  Status status = 2;
+}
+
+message EchoResponse {
+  Status status = 1;
+  string message = 2;
+}
+
+service MiscService {
+  rpc Heartbeat(HeartbeatMsg) returns (HeartbeatMsg);
+
+  rpc GetRandomNumber(RandomNumberRequest) returns (stream RandomNumberResponse);
+  rpc StopRandomNumber(StopRandomNumberRequest) returns (StopRandomNumberResponse);
+
+  rpc GetIncrementalSequence(IncrementalSequenceRequest) returns (stream IncrementalSequenceResponse);
+  rpc StopIncrementalSequence(StopIncrementalSequenceRequest) returns (StopIncrementalSequenceResponse);
+
+  rpc Echo(EchoRequest) returns (EchoResponse);
+}
