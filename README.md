@@ -1,5 +1,9 @@
 # 2024 Internship Task Example
 
+![screenshot1](./screenshots/screenshot1.png)
+
+![screenshot2](./screenshots/screenshot2.png)
+
 ## Overview
 
 Welcome to the 2024 Internship Task Example repository. This project is designed to showcase your skills in both frontend and backend development. The primary goal is to implement a functional system that demonstrates HTTP and WebSocket communication between the frontend and backend, along with common frontend components.
@@ -24,7 +28,7 @@ Welcome to the 2024 Internship Task Example repository. This project is designed
 * Prost: A Protocol Buffers implementation for Rust.
 * Serde: A framework for serializing and deserializing Rust data structures efficiently and generically.
 
-### Communication:
+### Communication
 
 Using ProtoBuf, a method developed by Google for serializing structured data, which is both language-neutral and platform-neutral. It is useful for developing programs to communicate with each other over a network or for storing data.
 
