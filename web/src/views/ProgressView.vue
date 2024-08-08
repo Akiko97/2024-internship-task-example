@@ -11,6 +11,7 @@ import {
   encodeIncrementalSequenceRequest,
   encodeStopIncrementalSequenceRequest,
   IncrementalSequenceRequest,
+  IncrementalSequenceResponse,
   StopIncrementalSequenceRequest,
 } from '../proto/msg_pb'
 import {
@@ -111,9 +112,9 @@ const connectWebsocket = () => {
   initWebSocket(webSocketStore.url)
 }
 
-const updateData = (msg) => {
+const updateData = (msg: IncrementalSequenceResponse) => {
   isWarning.value = false
-  percentage.value = msg.number
+  percentage.value = msg.number ? msg.number : 0 // undefined guard
 }
 
 const stopCallback = () => {

@@ -173,8 +173,8 @@ export const unsetID = () => {
   id.value = null
 }
 
-let updateRandomNumberResponseData: null | ((RandomNumberResponse) => void) = null
-export const setUpdateRandomNumberResponseData = (callback: (RandomNumberResponse) => void) => {
+let updateRandomNumberResponseData: null | ((msg: RandomNumberResponse) => void) = null
+export const setUpdateRandomNumberResponseData = (callback: (msg: RandomNumberResponse) => void) => {
   updateRandomNumberResponseData = callback
 }
 
@@ -183,8 +183,8 @@ export const setStopRandomNumberResponseCallback = (callback: () => void) => {
   stopRandomNumberResponseCallback = callback
 }
 
-let updateIncrementalSequenceResponseData: null | ((IncrementalSequenceResponse) => void) = null
-export const setUpdateIncrementalSequenceResponseData = (callback: (IncrementalSequenceResponse) => void) => {
+let updateIncrementalSequenceResponseData: null | ((msg: IncrementalSequenceResponse) => void) = null
+export const setUpdateIncrementalSequenceResponseData = (callback: (msg: IncrementalSequenceResponse) => void) => {
   updateIncrementalSequenceResponseData = callback
 }
 

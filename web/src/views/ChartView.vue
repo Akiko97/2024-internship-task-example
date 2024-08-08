@@ -135,7 +135,7 @@ const updateData = (msg: RandomNumberResponse) => {
     datasets: [
       {
         ...data.value.datasets[0],
-        data: [...data.value.datasets[0].data, msg.number]
+        data: [...data.value.datasets[0].data, msg.number ? msg.number : 0] // undefined guard
       }
     ]
   }
