@@ -14,13 +14,17 @@ import {
 } from '../utils'
 import {
   decodeRandomNumberResponse,
+  decodeStopRandomNumberResponse,
   encodeRandomNumberRequest,
   encodeStopRandomNumberRequest,
   RandomNumberRequest,
   RandomNumberResponse,
   StatusCode,
   StopRandomNumberRequest,
+  StopRandomNumberResponse,
 } from '../proto/msg_pb'
+
+import WsControl from '../components/WsControl.vue'
 
 ChartJS.register(
     CategoryScale,
@@ -60,7 +64,7 @@ const data_no = ref(0)
 const webSocketStore = useWebSocketStore()
 const min = ref(0)
 const max = ref(100)
-const interval = ref(5)
+const interval = ref(2)
 const id = ref('chart0')
 
 const clear = () => {
@@ -99,7 +103,7 @@ const initWebSocket = () => {
             case RANDOM_NUMBER_RESPONSE: {
               let msg: RandomNumberResponse = decodeRandomNumberResponse(msg_buf)
               if (msg.id && msg.id === id.value) {
-                if (msg.status && msg.status.code !== StatusCode.SUCCESS) {
+                if (msg.status && msg.status.code && msg.status.code !== StatusCode.SUCCESS) {
                   ElMessage.error(`Receive error msg: ${msg.status.message}`)
                 } else {
                   if (msg.number) {
@@ -128,7 +132,24 @@ const initWebSocket = () => {
               break
             }
             case STOP_RANDOM_NUMBER_RESPONSE: {
-              //
+              let msg: StopRandomNumberResponse = decodeStopRandomNumberResponse(msg_buf)
+              if (msg.id && msg.id === id.value) {
+                if (msg.status && msg.status.code && msg.status.code !== StatusCode.SUCCESS) {
+                  ElMessage.error(`Receive error msg: ${msg.status.message}`)
+                } else {
+                  setTimeout(() => {
+                    ElMessage({
+                      message: 'Task stopped',
+                      type: 'success',
+                    })
+                  }, interval.value * 2 * 1000)
+                }
+              } else {
+                ElMessage({
+                  message: 'Received id not equal to id set by website',
+                  type: 'warning',
+                })
+              }
               break
             }
             default: {
@@ -256,55 +277,14 @@ onBeforeUnmount(() => {
               </el-col>
             </el-row>
             <br>
-            <el-row :gutter="20" style="width: 100%">
-              <el-col :span="6">
-                <el-button
-                    v-if="!(ws)"
-                    text
-                    bg
-                    style="width: 100%"
-                    @click="initWebSocket"
-                >
-                  Connect
-                </el-button>
-                <el-button
-                    v-else
-                    text
-                    bg
-                    style="width: 100%"
-                    @click="disconnectWebSocket"
-                >
-                  Disconnect
-                </el-button>
-              </el-col>
-              <el-col :span="6">
-                <el-button
-                    type="primary"
-                    style="width: 100%"
-                    @click="sendStartMsg"
-                >
-                  Start
-                </el-button>
-              </el-col>
-              <el-col :span="6">
-                <el-button
-                    type="warning"
-                    style="width: 100%"
-                    @click="sendStopMsg"
-                >
-                  Stop
-                </el-button>
-              </el-col>
-              <el-col :span="6">
-                <el-button
-                    type="danger"
-                    style="width: 100%"
-                    @click="clear"
-                >
-                  Clear
-                </el-button>
-              </el-col>
-            </el-row>
+            <WsControl
+                :ifConnect="ws !== null"
+                :initWebSocket="initWebSocket"
+                :disconnectWebSocket="disconnectWebSocket"
+                :sendStartMsg="sendStartMsg"
+                :sendStopMsg="sendStopMsg"
+                :clear="clear"
+            />
           </el-header>
           <el-main>
             <Line :data="data" :options="options" />
