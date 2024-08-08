@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   ifConnect: boolean,
-  initWebSocket: () => void,
+  connectWebsocket: () => void,
   disconnectWebSocket: () => void,
   sendStartMsg: () => void,
   sendStopMsg: () => void,
@@ -17,7 +17,7 @@ defineProps<{
           text
           bg
           style="width: 100%"
-          @click="initWebSocket"
+          @click="connectWebsocket"
       >
         Connect
       </el-button>

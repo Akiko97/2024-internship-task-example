@@ -1,30 +1,42 @@
 <script setup lang="ts">
-import {useWebSocketStore} from '../store/ws'
-import {onBeforeUnmount, onMounted, Ref, ref} from 'vue'
-import {CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip} from 'chart.js'
-import {Line} from 'vue-chartjs'
-import {ElMessage} from 'element-plus'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useWebSocketStore } from '../store/ws'
 import {
-  decodePacket,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip
+} from 'chart.js'
+import { Line } from 'vue-chartjs'
+import {
   encodePacket,
   RANDOM_NUMBER_REQUEST,
-  RANDOM_NUMBER_RESPONSE,
   STOP_RANDOM_NUMBER_REQUEST,
-  STOP_RANDOM_NUMBER_RESPONSE,
 } from '../utils'
 import {
-  decodeRandomNumberResponse,
-  decodeStopRandomNumberResponse,
   encodeRandomNumberRequest,
   encodeStopRandomNumberRequest,
   RandomNumberRequest,
   RandomNumberResponse,
-  StatusCode,
   StopRandomNumberRequest,
-  StopRandomNumberResponse,
 } from '../proto/msg_pb'
-
+import {
+  ws,
+  initWebSocket,
+  disconnectWebSocket,
+  setUpdateRandomNumberResponseData,
+  setStopRandomNumberResponseCallback,
+  setID,
+  unsetID,
+} from '../websocket.ts'
 import WsControl from '../components/WsControl.vue'
+
+const webSocketStore = useWebSocketStore()
 
 ChartJS.register(
     CategoryScale,
@@ -61,11 +73,14 @@ const options = {
 
 const data_no = ref(0)
 
-const webSocketStore = useWebSocketStore()
 const min = ref(0)
 const max = ref(100)
 const interval = ref(2)
 const id = ref('chart0')
+
+watch(id, (newVal) => {
+  setID(newVal)
+})
 
 const clear = () => {
   data.value = {
@@ -79,110 +94,6 @@ const clear = () => {
     ]
   }
   data_no.value = 0
-}
-
-const ws: Ref<WebSocket | null> = ref(null)
-const initWebSocket = () => {
-  ws.value = new WebSocket(webSocketStore.url)
-
-  ws.value.onopen = () => {
-    ElMessage({
-      message: 'WebSocket connection opened',
-      type: 'success',
-    })
-  }
-
-  ws.value.onmessage = (event: MessageEvent) => {
-    if (event.data instanceof Blob) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const packet = reader.result as ArrayBuffer
-        try {
-          let [cmdID, msg_buf] = decodePacket(packet)
-          switch (cmdID) {
-            case RANDOM_NUMBER_RESPONSE: {
-              let msg: RandomNumberResponse = decodeRandomNumberResponse(msg_buf)
-              if (msg.id && msg.id === id.value) {
-                if (msg.status && msg.status.code && msg.status.code !== StatusCode.SUCCESS) {
-                  ElMessage.error(`Receive error msg: ${msg.status.message}`)
-                } else {
-                  if (msg.number) {
-                    data.value = {
-                      labels: [...data.value.labels, `Data${data_no.value++}`],
-                      datasets: [
-                        {
-                          ...data.value.datasets[0],
-                          data: [...data.value.datasets[0].data, msg.number]
-                        }
-                      ]
-                    }
-                  } else {
-                    ElMessage({
-                      message: 'Received packet without number',
-                      type: 'warning',
-                    })
-                  }
-                }
-              } else {
-                ElMessage({
-                  message: 'Received id not equal to id set by website',
-                  type: 'warning',
-                })
-              }
-              break
-            }
-            case STOP_RANDOM_NUMBER_RESPONSE: {
-              let msg: StopRandomNumberResponse = decodeStopRandomNumberResponse(msg_buf)
-              if (msg.id && msg.id === id.value) {
-                if (msg.status && msg.status.code && msg.status.code !== StatusCode.SUCCESS) {
-                  ElMessage.error(`Receive error msg: ${msg.status.message}`)
-                } else {
-                  setTimeout(() => {
-                    ElMessage({
-                      message: 'Task stopped',
-                      type: 'success',
-                    })
-                  }, interval.value * 2 * 1000)
-                }
-              } else {
-                ElMessage({
-                  message: 'Received id not equal to id set by website',
-                  type: 'warning',
-                })
-              }
-              break
-            }
-            default: {
-              ElMessage({
-                message: 'Received packet include invalid cmd id',
-                type: 'warning',
-              })
-            }
-          }
-        } catch (error) {
-          ElMessage.error(`Invalid packet: ${error}`)
-        }
-      }
-      reader.readAsArrayBuffer(event.data)
-    } else {
-      ElMessage({
-        message: 'Received packet is not a Blob',
-        type: 'warning',
-      })
-    }
-  }
-
-  ws.value.onclose = () => {
-    ElMessage({
-      message: 'WebSocket connection closed',
-      type: 'warning',
-    })
-    ws.value = null
-  }
-
-  ws.value.onerror = (error: Event) => {
-    ElMessage.error(`WebSocket error: ${error}`)
-  }
 }
 
 const sendStartMsg = () => {
@@ -214,19 +125,39 @@ const sendStopMsg = () => {
   }
 }
 
-onMounted(() => {
-  initWebSocket()
-})
+const connectWebsocket = () => {
+  initWebSocket(webSocketStore.url)
+}
 
-const disconnectWebSocket = () => {
-  if (ws.value) {
-    ws.value.close()
-    ws.value = null
+const updateData = (msg: RandomNumberResponse) => {
+  data.value = {
+    labels: [...data.value.labels, `Data${data_no.value++}`],
+    datasets: [
+      {
+        ...data.value.datasets[0],
+        data: [...data.value.datasets[0].data, msg.number]
+      }
+    ]
   }
 }
 
+const stopCallback = () => {
+  setTimeout(() => {
+    ElMessage({
+      message: 'Task stopped',
+      type: 'success',
+    })
+  }, interval.value * 2 * 1000)
+}
+
+onMounted(() => {
+  setUpdateRandomNumberResponseData(updateData)
+  setStopRandomNumberResponseCallback(stopCallback)
+  setID(id.value)
+})
+
 onBeforeUnmount(() => {
-  disconnectWebSocket()
+  unsetID()
 })
 </script>
 
@@ -279,7 +210,7 @@ onBeforeUnmount(() => {
             <br>
             <WsControl
                 :ifConnect="ws !== null"
-                :initWebSocket="initWebSocket"
+                :connectWebsocket="connectWebsocket"
                 :disconnectWebSocket="disconnectWebSocket"
                 :sendStartMsg="sendStartMsg"
                 :sendStopMsg="sendStopMsg"
