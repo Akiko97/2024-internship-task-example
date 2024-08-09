@@ -19,11 +19,11 @@ pub fn main() {
     if Path::new(format!("{web_path}/server.json").as_str()).exists() {
         fs::remove_file(format!("{web_path}/server.json"))
             .expect(format!("Could not delete {web_path}/server.json").as_str());
-        fs::copy(
-            format!("{workspace_path}/server/server.json"),
-            format!("{web_path}/server.json")
-        ).unwrap();
     }
+    fs::copy(
+        format!("{workspace_path}/server/server.json"),
+        format!("{web_path}/server.json")
+    ).unwrap();
 
     let mut yarn = Command::new("yarn")
         .arg("build")
