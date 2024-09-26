@@ -46,6 +46,7 @@ hyper-util = { version = "0.1", features = [ "client-legacy" ] }
 mime_guess = "2.0"
 
 proto = { path = "proto" }
+proto_gen = { path = "proto/proto_gen" }
 
 [profile.release]
 strip = true

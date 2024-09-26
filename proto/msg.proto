@@ -14,11 +14,13 @@ message Status {
   string message = 2;
 }
 
+// CmdID: 1
 message HeartbeatMsg {
   string id = 1;
   int64 timestamp = 2;
 }
 
+// CmdID: 2
 message RandomNumberRequest {
   string id = 1;
   int32 min = 2;
@@ -26,10 +28,12 @@ message RandomNumberRequest {
   int32 interval = 4;
 }
 
+// CmdID: 3
 message StopRandomNumberRequest {
   string id = 1;
 }
 
+// CmdID: 4
 message IncrementalSequenceRequest {
   string id = 1;
   int32 start = 2;
@@ -37,36 +41,43 @@ message IncrementalSequenceRequest {
   int32 interval = 4;
 }
 
+// CmdID: 5
 message StopIncrementalSequenceRequest {
   string id = 1;
 }
 
+// CmdID: 6
 message EchoRequest {
   string message = 1;
 }
 
+// CmdID: 7
 message RandomNumberResponse {
   string id = 1;
   Status status = 2;
   int32 number = 3;
 }
 
+// CmdID: 8
 message StopRandomNumberResponse {
   string id = 1;
   Status status = 2;
 }
 
+// CmdID: 9
 message IncrementalSequenceResponse {
   string id = 1;
   Status status = 2;
   int32 number = 3;
 }
 
+// CmdID: 10
 message StopIncrementalSequenceResponse {
   string id = 1;
   Status status = 2;
 }
 
+// CmdID: 11
 message EchoResponse {
   Status status = 1;
   string message = 2;
