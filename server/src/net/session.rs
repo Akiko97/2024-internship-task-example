@@ -70,7 +70,8 @@ impl Session {
         }
     }
 
-    pub async fn send(&mut self, cmd_id: u16, msg: impl protoMessage) -> Result<()> {
+    pub async fn send(&mut self, msg: impl protoMessage + proto::Msg) -> Result<()> {
+        let cmd_id = msg.get_cmd_id();
         let packet = Packet::new(cmd_id, msg.encode_to_vec());
         let msg = Message::Binary(Vec::<u8>::from(packet));
         let mut socket = self.socket.lock().await;
@@ -99,10 +100,12 @@ impl Session {
         task.store(value, Ordering::Relaxed);
     }
 
+    #[allow(dead_code)]
     pub fn get_socket(&mut self) -> Arc<Mutex<WebSocket>> {
         self.socket.clone()
     }
 
+    #[allow(dead_code)]
     pub fn get_tasks(&mut self) -> Arc<Mutex<HashMap<String, Arc<AtomicBool>>>> {
         self.tasks.clone()
     }

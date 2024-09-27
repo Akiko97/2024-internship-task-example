@@ -17,7 +17,7 @@ pub async fn on_heartbeat_msg(
         id: msg.id.clone(),
         timestamp,
     };
-    session.send(cmd_id::HEARTBEAT_MSG, rsp).await
+    session.send(rsp).await
 }
 
 pub async fn on_random_number_request(
@@ -34,7 +34,7 @@ pub async fn on_random_number_request(
             }),
             ..Default::default()
         };
-        session.send(cmd_id::RANDOM_NUMBER_RESPONSE, rsp).await
+        session.send(rsp).await
     } else {
         let task = Arc::new(AtomicBool::new(true));
         session.add_task(&id, task.clone()).await;
@@ -52,7 +52,7 @@ pub async fn on_random_number_request(
                     number: random_number,
                     ..Default::default()
                 };
-                session.send(cmd_id::RANDOM_NUMBER_RESPONSE, rsp).await
+                session.send(rsp).await
                     .expect("Error in sending response");
             }
             session.remove_task(&id).await;
@@ -76,7 +76,7 @@ pub async fn on_stop_random_number_request(
             }),
             ..Default::default()
         };
-        session.send(cmd_id::STOP_RANDOM_NUMBER_RESPONSE, rsp).await
+        session.send(rsp).await
     } else {
         let rsp = StopRandomNumberResponse {
             id: msg.id.clone(),
@@ -86,7 +86,7 @@ pub async fn on_stop_random_number_request(
             }),
             ..Default::default()
         };
-        session.send(cmd_id::STOP_RANDOM_NUMBER_RESPONSE, rsp).await
+        session.send(rsp).await
     }
 }
 
@@ -104,7 +104,7 @@ pub async fn on_incremental_sequence_request(
             }),
             ..Default::default()
         };
-        session.send(cmd_id::INCREMENTAL_SEQUENCE_RESPONSE, rsp).await
+        session.send(rsp).await
     } else {
         let task = Arc::new(AtomicBool::new(true));
         session.add_task(&id, task.clone()).await;
@@ -122,7 +122,7 @@ pub async fn on_incremental_sequence_request(
                     number: num,
                     ..Default::default()
                 };
-                session.send(cmd_id::INCREMENTAL_SEQUENCE_RESPONSE, rsp).await
+                session.send(rsp).await
                     .expect("Error in sending response");
                 num += 1;
             }
@@ -147,7 +147,7 @@ pub async fn on_stop_incremental_sequence_request(
             }),
             ..Default::default()
         };
-        session.send(cmd_id::STOP_INCREMENTAL_SEQUENCE_RESPONSE, rsp).await
+        session.send(rsp).await
     } else {
         let rsp = StopIncrementalSequenceResponse {
             id: msg.id.clone(),
@@ -157,7 +157,7 @@ pub async fn on_stop_incremental_sequence_request(
             }),
             ..Default::default()
         };
-        session.send(cmd_id::STOP_INCREMENTAL_SEQUENCE_RESPONSE, rsp).await
+        session.send(rsp).await
     }
 }
 
@@ -169,5 +169,5 @@ pub async fn on_echo_request(
         message: msg.message.clone(),
         ..Default::default()
     };
-    session.send(cmd_id::ECHO_RESPONSE, rsp).await
+    session.send(rsp).await
 }

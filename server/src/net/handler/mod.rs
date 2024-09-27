@@ -6,19 +6,10 @@ use tracing::Instrument;
 use proto::*;
 use super::session::Session;
 use super::packet::Packet;
-use handler_func::*;
 
-macro_rules! trait_handler {
-    ($($name:ident, $cmd_id:ident;)*) => {
+macro_rules! packet_handler {
+    ($($category:ident::$name:ident;)*) => {
         pub trait SessionCommandHandler {
-            $(
-                paste! {
-                    async fn [<on_$name:snake>](session: &mut Session, msg: &$name) -> Result<()> {
-                        [<on_$name:snake>](session, msg).await
-                    }
-                }
-            )*
-
             async fn on_message(session: &mut Session, packet: Packet) -> Result<()> {
                 use ::prost::Message;
 
@@ -26,10 +17,10 @@ macro_rules! trait_handler {
                 let msg = packet.msg;
                 match cmd_id {
                     $(
-                        cmd_id:: $cmd_id => {
+                        ::proto::$name::CMD_ID => {
                             let msg = $name::decode(&mut &msg[..])?;
                             paste! {
-                                Self::[<on_$name:snake>](session, &msg)
+                                crate::net::handler::[<$category:snake>]::[<on_$name:snake>](session, &msg)
                                     .instrument(tracing::info_span!(stringify!([<on_$name:snake>]), cmd_id = cmd_id))
                                     .await
                             }
@@ -45,11 +36,11 @@ macro_rules! trait_handler {
     };
 }
 
-trait_handler! {
-    HeartbeatMsg, HEARTBEAT_MSG;
-    RandomNumberRequest, RANDOM_NUMBER_REQUEST;
-    StopRandomNumberRequest, STOP_RANDOM_NUMBER_REQUEST;
-    IncrementalSequenceRequest, INCREMENTAL_SEQUENCE_REQUEST;
-    StopIncrementalSequenceRequest, STOP_INCREMENTAL_SEQUENCE_REQUEST;
-    EchoRequest, ECHO_REQUEST;
+packet_handler! {
+    HandlerFunc::HeartbeatMsg;
+    HandlerFunc::RandomNumberRequest;
+    HandlerFunc::StopRandomNumberRequest;
+    HandlerFunc::IncrementalSequenceRequest;
+    HandlerFunc::StopIncrementalSequenceRequest;
+    HandlerFunc::EchoRequest;
 }

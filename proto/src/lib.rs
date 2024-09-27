@@ -1,5 +1,3 @@
-pub mod cmd_id;
-
 include!("../out/msg.rs");
 
 pub trait CmdID {
@@ -10,5 +8,5 @@ pub trait CmdID {
     }
 }
 
-pub trait Message: prost::Message + CmdID {}
-impl<T: prost::Message + CmdID> Message for T {}
+pub trait Msg: prost::Message + CmdID {}
+impl<T: prost::Message + CmdID> Msg for T {}
